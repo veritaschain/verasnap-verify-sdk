@@ -4,7 +4,7 @@ VeraSnap / CPP の撮影証明をサーバー側で検証し、端末の署名�
 
 [English README](README.md) · [導入ガイド](docs/ja/INTEGRATION.md) · [限界と未対応事項](docs/ja/LIMITATIONS.md) · [端末鍵の登録（英語）](docs/ENROLLMENT.md) · [結果コード（英語）](docs/RESULTS.md) · [撮影SDK（設計段階・英語）](docs/CAPTURE_SDK.md)
 
-> **状態：0.1.0（アルファ版）。** 検証と鍵登録の処理は完成しており、テスト125件を通しています。そのうち31件は実際のRFC 3161タイムスタンプを使った不正請求のシナリオで、ほかに実機のAndroid鍵証明チェーンを使ったテストもあります。保険会社のアプリに組み込む撮影SDKは設計段階で、コードはまだありません。1.0までにAPIが変わる可能性があります。
+> **アルファ版**　[v0.1.0 のリリース時](https://github.com/veritaschain/verasnap-verify-sdk/releases/tag/v0.1.0)には125件のテストが通りました。以下のコマンドで指定する版では[131件が通っています](https://github.com/veritaschain/verasnap-verify-sdk/actions/runs/44302113905)。鍵の再登録、実際の RFC 3161 タイムスタンプを使った不正請求シナリオ31件、実機の Android 鍵証明チェーンを検証するテストを含みます。保険会社のアプリに組み込む撮影SDKは設計段階です。1.0までにAPIが変わる可能性があります。
 
 ## できること
 
@@ -20,11 +20,19 @@ VeraSnap / CPP の撮影証明をサーバー側で検証し、端末の署名�
 
 ## インストール
 
-Python 3.10以上。
+Python 3.10以上を使用してください。端末鍵を登録する場合は、以下のコミットを指定してインストールしてください。この版には v0.1.0 のリリース後に入った[鍵の再登録に関する修正](https://github.com/veritaschain/verasnap-verify-sdk/pull/1)が含まれています。登録処理と手動の `keys add` は、登録済みのフィンガープリントを拒否し、失効情報を含む既存の記録を保持します。
 
 ```bash
-pip install git+https://github.com/veritaschain/verasnap-verify-sdk
+python -m pip install "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@5b19884061729c1aadbf3f22daab133c42082ede"
 ```
+
+v0.1.0 と依存ライブラリを導入済みの場合は、どちらの版もバージョン表示が `0.1.0` のため、次のコマンドでSDKを再インストールしてください。
+
+```bash
+python -m pip install --force-reinstall --no-deps "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@5b19884061729c1aadbf3f22daab133c42082ede"
+```
+
+独自の鍵登録ストアを利用している場合は、[`insert_if_absent`](docs/ENROLLMENT.md) によるアトミックな挿入を実装してください。過去の失効記録が上書きされた可能性がある場合、更新だけでは履歴を復元できないため、鍵レジストリを独立した監査記録またはバックアップと照合してください。
 
 依存ライブラリは `cryptography`、`asn1crypto`、`cbor2` です。検証時にネットワーク通信は行いません。
 
