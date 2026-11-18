@@ -11,4 +11,4 @@ First release (alpha).
 - Merkle batch verification as in the apps.
 - Device-key enrollment: Android Key Attestation (Google roots bundled, revocation list, verified boot, locked bootloader, package and signing digest, lenient parsing of non-strict device certificates) and Apple App Attest (attestation and assertions) with challenge, account binding and proof of possession.
 - Key registry (in-memory, SQLite), CLI, reference HTTP server example.
-- Tests: 125, including 31 fraud scenarios with real timestamps and real Android attestation chains from google/android-key-attestation.
+- Tests: 125, including 31 fraud scenarios with real timestamps, and tests against real Android attestation chains from google/android-key-attestation.

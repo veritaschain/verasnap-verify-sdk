@@ -4,7 +4,7 @@ Server-side verification of VeraSnap / CPP capture proofs, and enrollment of dev
 
 [日本語版 README](README.ja.md) · [Integration guide](docs/INTEGRATION.md) · [Enrollment](docs/ENROLLMENT.md) · [Result codes](docs/RESULTS.md) · [Limitations](docs/LIMITATIONS.md) · [Capture SDK (planned)](docs/CAPTURE_SDK.md)
 
-> **Status: 0.1.0 (alpha).** The verifier and the enrollment checks are complete and tested (125 tests, including 31 fraud scenarios with real RFC 3161 timestamps and real Android attestation chains). The capture SDK for insurers' own apps is a design, not yet code. APIs may change before 1.0.
+> **Status: 0.1.0 (alpha).** The verifier and the enrollment checks are complete and tested (125 tests, including 31 fraud scenarios with real RFC 3161 timestamps, and tests against real Android attestation chains). The capture SDK for insurers' own apps is a design, not yet code. APIs may change before 1.0.
 
 ## What it does
 
