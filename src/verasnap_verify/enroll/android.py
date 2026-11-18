@@ -261,6 +261,74 @@ class RevocationList:
 
 _SIG_HASHES = {"sha1": hashes.SHA1, "sha224": hashes.SHA224, "sha256": hashes.SHA256, "sha384": hashes.SHA384, "sha512": hashes.SHA512}
 
+# Enrollment accepts short, leaf-first Android attestation paths, not arbitrary
+# PKIX input. Bound untrusted DER before parsing or doing public-key operations.
+_MAX_CHAIN_CERTIFICATES = 8
+_MAX_CERTIFICATE_BYTES = 64 * 1024
+_MAX_CHAIN_BYTES = 256 * 1024
+_BASIC_CONSTRAINTS = "2.5.29.19"
+_KEY_USAGE = "2.5.29.15"
+_UNSUPPORTED_CONSTRAINTS = {
+    "2.5.29.30",  # nameConstraints
+    "2.5.29.33",  # policyMappings
+    "2.5.29.36",  # policyConstraints
+    "2.5.29.37",  # extendedKeyUsage
+    "2.5.29.54",  # inhibitAnyPolicy
+}
+
+
+@dataclass(frozen=True)
+class _CertificateExtensions:
+    ca: bool = False
+    path_length: int | None = None
+    key_usage: frozenset[str] | None = None
+    key_description: bytes | None = None
+
+
+def _certificate_extensions(extensions) -> _CertificateExtensions:
+    """Parse constraints without normalizing the certificate's signed bytes.
+
+    Only extensions whose critical semantics are actually enforced are admitted
+    as critical. Other path constraints are rejected even when non-critical;
+    this enrollment verifier does not implement general PKIX policy processing.
+    """
+    seen: set[str] = set()
+    ca, path_length, key_usage, key_description = False, None, None, None
+    for ext in extensions or []:
+        oid = ext["extn_id"].dotted
+        if oid in seen:
+            raise ValueError(f"duplicate certificate extension {oid}")
+        seen.add(oid)
+        raw = ext["extn_value"].contents
+        if oid == _BASIC_CONSTRAINTS:
+            value = a_x509.BasicConstraints.load(raw, strict=True)
+            native = value.native
+            if set(native) != {"ca", "path_len_constraint"} or value.dump(force=True) != raw:
+                raise ValueError("malformed BasicConstraints")
+            ca, path_length = native["ca"], native["path_len_constraint"]
+            if path_length is not None and (not ca or path_length < 0):
+                raise ValueError("invalid BasicConstraints pathLenConstraint")
+        elif oid == _KEY_USAGE:
+            value = a_x509.KeyUsage.load(raw, strict=True)
+            usages = value.native
+            if (not usages or any(not isinstance(usage, str) for usage in usages)
+                    or a_x509.KeyUsage(usages).dump() != raw):
+                raise ValueError("malformed KeyUsage")
+            if usages.intersection({"encipher_only", "decipher_only"}) and "key_agreement" not in usages:
+                raise ValueError("KeyUsage encipherOnly/decipherOnly requires keyAgreement")
+            key_usage = frozenset(usages)
+        elif oid == OID_KEY_DESCRIPTION.dotted_string:
+            key_description = raw
+        elif oid in _UNSUPPORTED_CONSTRAINTS:
+            raise ValueError(f"unsupported certificate constraint {oid}")
+        elif ext["critical"].native:
+            raise ValueError(f"unsupported critical certificate extension {oid}")
+    if key_usage is not None and "key_cert_sign" in key_usage and not ca:
+        raise ValueError("KeyUsage keyCertSign requires BasicConstraints CA")
+    if path_length is not None and key_usage is not None and "key_cert_sign" not in key_usage:
+        raise ValueError("pathLenConstraint conflicts with KeyUsage")
+    return _CertificateExtensions(ca, path_length, key_usage, key_description)
+
 
 @dataclass(frozen=True)
 class _AttCert:
@@ -281,25 +349,36 @@ class _AttCert:
     not_after: datetime
     serial: int
     subject: str
+    subject_name: a_x509.Name
+    issuer_name: a_x509.Name
+    constraints: _CertificateExtensions
     key_description: bytes | None
 
     @classmethod
     def load(cls, der: bytes) -> "_AttCert":
-        cert = a_x509.Certificate.load(der)
+        encoded = _der.parse_one(der)
+        if not encoded.is_universal(_der.TAG_SEQUENCE):
+            raise ValueError("certificate must be a DER sequence")
+        fields = encoded.children()
+        if len(fields) != 3 or not fields[0].is_universal(_der.TAG_SEQUENCE):
+            raise ValueError("certificate has an invalid DER structure")
+        cert = a_x509.Certificate.load(der, strict=True)
         tbs = cert["tbs_certificate"]
+        # Capture before interpreting extensions. Signature verification always
+        # uses these original bytes, including tolerated AlgorithmIdentifier NULLs.
+        signed_bytes = fields[0].raw
         key = serialization.load_der_public_key(tbs["subject_public_key_info"].dump())
         sig_alg = cert["signature_algorithm"]
+        if sig_alg["algorithm"] != tbs["signature"]["algorithm"]:
+            raise ValueError("certificate signature algorithm identifiers disagree")
         try:
             hash_algo = sig_alg.hash_algo
         except (ValueError, KeyError):
             hash_algo = None
-        kd = None
-        for ext in tbs["extensions"] or []:
-            if ext["extn_id"].dotted == OID_KEY_DESCRIPTION.dotted_string:
-                kd = ext["extn_value"].contents
+        constraints = _certificate_extensions(tbs["extensions"])
         validity = tbs["validity"]
         return cls(
-            tbs=tbs.dump(),
+            tbs=signed_bytes,
             signature=cert["signature_value"].native,
             signature_algo=sig_alg.signature_algo,
             hash_algo=hash_algo,
@@ -309,7 +388,10 @@ class _AttCert:
             not_after=validity["not_after"].native,
             serial=tbs["serial_number"].native,
             subject=cert.subject.human_friendly,
-            key_description=kd,
+            subject_name=cert.subject,
+            issuer_name=cert.issuer,
+            constraints=constraints,
+            key_description=constraints.key_description,
         )
 
     def valid_at(self, when: datetime, skew: timedelta) -> bool:
@@ -331,6 +413,43 @@ class _AttCert:
         except (InvalidSignature, ValueError):
             return False
         return True
+
+
+def _check_path_constraints(chain: Sequence[_AttCert], anchor: _AttCert) -> None:
+    """Check issuer authority and names; signatures and validity are separate.
+
+    The caller supplies a leaf-first path ending in a copy of a pinned root.
+    Use the configured anchor's constraints, not the client copy's constraints.
+    A re-issued root with the same key/name may have a different validity period.
+    """
+    if chain[-1].subject_name != anchor.subject_name:
+        raise EnrollmentError("attestation_chain_invalid", "root subject does not match the trusted anchor")
+    if len({cert.tbs for cert in chain}) != len(chain):
+        raise EnrollmentError("attestation_chain_invalid", "duplicate certificate in attestation chain")
+    path = [*chain[:-1], anchor]
+    for index, cert in enumerate(path):
+        if index < len(path) - 1 and cert.issuer_name != path[index + 1].subject_name:
+            raise EnrollmentError("attestation_chain_invalid", f"attestation certificate {index} issuer name does not match")
+        constraints = cert.constraints
+        if index == 0:
+            if constraints.key_usage is not None and "digital_signature" not in constraints.key_usage:
+                raise EnrollmentError("attestation_key_type", "attested certificate does not permit digital signatures")
+            continue
+        if not constraints.ca:
+            raise EnrollmentError("attestation_chain_invalid", f"attestation issuer {index} is not a CA")
+        if constraints.key_usage is not None and "key_cert_sign" not in constraints.key_usage:
+            raise EnrollmentError("attestation_chain_invalid", f"attestation issuer {index} cannot sign certificates")
+        if constraints.path_length is not None:
+            # RFC 5280 excludes the target and self-issued intermediates from
+            # pathLenConstraint. A self-issued certificate is still signature-checked.
+            below = sum(c.subject_name != c.issuer_name for c in path[1:index])
+            if below > constraints.path_length:
+                raise EnrollmentError("attestation_chain_invalid", f"attestation issuer {index} path length exceeded")
+    # Android trusts the key-description extension nearest the root. This API
+    # enrolls the directly attested signing key, so that extension must be in
+    # the leaf, not an issuer followed by another claimed attestation.
+    if any(cert.key_description is not None for cert in [*chain[1:], anchor]):
+        raise EnrollmentError("attestation_chain_invalid", "the attested key is not the leaf signing key")
 
 
 # ---------------------------------------------------------------- verification
@@ -389,6 +508,12 @@ def verify_android_attestation(
     now = now or utcnow()
     if not chain_der:
         raise EnrollmentError("attestation_missing", "Android attestation chain is empty")
+    if not 2 <= len(chain_der) <= _MAX_CHAIN_CERTIFICATES:
+        raise EnrollmentError("attestation_chain_invalid", "attestation chain must contain 2 to 8 certificates")
+    if any(not isinstance(der, bytes) or not 0 < len(der) <= _MAX_CERTIFICATE_BYTES for der in chain_der):
+        raise EnrollmentError("attestation_malformed", "invalid or oversized attestation certificate")
+    if sum(map(len, chain_der)) > _MAX_CHAIN_BYTES:
+        raise EnrollmentError("attestation_malformed", "attestation chain exceeds the byte limit")
     try:
         chain = [_AttCert.load(der) for der in chain_der]
     except Exception as exc:  # malformed DER from the client
@@ -401,6 +526,11 @@ def verify_android_attestation(
     anchor = root_keys.get(top.spki)
     if anchor is None:
         raise EnrollmentError("attestation_untrusted_root", "attestation chain does not end at a Google attestation root")
+    try:
+        anchor_cert = _AttCert.load(anchor.public_bytes(serialization.Encoding.DER))
+        _check_path_constraints(chain, anchor_cert)
+    except (ValueError, TypeError) as exc:
+        raise EnrollmentError("attestation_malformed", f"invalid certificate path constraints: {exc}") from exc
     # The device may carry an older copy of the root (Google re-issued its RSA
     # root with the same key), so the validity that counts is the anchor's.
     if not is_valid_at(anchor, now, skew=policy.clock_skew):
