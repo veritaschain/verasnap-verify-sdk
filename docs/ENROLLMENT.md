@@ -85,12 +85,23 @@ Byte strings the app signs or hashes (`challenge` is the 32 decoded bytes):
 
 **Android** (`verify_android_attestation`)
 
-- chain signatures, ending at a Google hardware attestation root (bundled: RSA root re-issued 2022, ECDSA "Key Attestation CA1"); certificates valid now; optional revocation list;
+- chain signatures and issuer/subject name linkage, ending at a Google hardware attestation root (bundled: RSA root re-issued 2022, ECDSA "Key Attestation CA1"); certificates valid now; optional revocation list;
+- issuer `BasicConstraints` CA authorization, `KeyUsage.keyCertSign` when KeyUsage is present, and path-length limits (excluding the leaf and self-issued intermediates); the signing leaf must permit `digitalSignature` when KeyUsage is present;
+- duplicate or malformed constraints and unsupported critical extensions are rejected. Name constraints, policy mappings/constraints, extended key usage and inhibit-any-policy are not implemented by this bounded attestation verifier and are rejected even if non-critical;
 - leaf key = the key being enrolled; `attestationChallenge` = the challenge;
 - attestation and KeyMint security level ≥ policy (TEE by default);
 - hardware-enforced: EC, P-256 (or curve omitted, as some StrongBox chips do, with the leaf key itself P-256), purpose SIGN, origin GENERATED;
 - root of trust: verified boot state VERIFIED and bootloader locked (defaults);
 - attestation application id: package name and signing-certificate digest allowed.
+
+The key-description extension nearest the root must describe the leaf signing
+key being enrolled. An extension in an issuer certificate is rejected; this API
+does not enroll a later key based on a different, previously attested key.
+Chains contain 2–8 certificates, each at most 64 KiB and together at most 256 KiB.
+The configured root's constraints and validity apply to same-key, same-name root
+renewals; an expired transported copy cannot replace those trusted settings.
+StrongBox AlgorithmIdentifier NULL compatibility is retained, and signatures
+are verified over the original TBSCertificate bytes without rewriting them.
 
 Tested against synthetic chains and against real device chains from google/android-key-attestation (including a StrongBox leaf that strict parsers reject).
 
