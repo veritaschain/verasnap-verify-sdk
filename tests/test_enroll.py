@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
+from threading import Barrier
 
 import pytest
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from attest_helpers import NOW, AndroidFixture, AppleFixture
-from verasnap_verify import InMemoryKeyRegistry, Verifier
+from verasnap_verify import InMemoryKeyRegistry, KeyRecord, SqliteKeyRegistry, Verifier
 from verasnap_verify._crypto import b64encode, spki_der, x963
 from verasnap_verify.enroll import (
     AndroidPolicy,
@@ -244,6 +246,113 @@ def test_enroller_android_end_to_end(android):
     with pytest.raises(EnrollmentError) as exc:
         enr.enroll(req, "policy-123")
     assert exc.value.code == "challenge_unknown"
+
+
+def _register_android(enr, fixture, account):
+    ch = enr.issue_challenge(account)
+    return enr.enroll({
+        "challenge_id": ch.challenge_id,
+        "platform": "android",
+        "signing_public_key": b64encode(x963(fixture.signing_key.public_key())),
+        "proof_of_possession": _pop(fixture.signing_key, ch.nonce),
+        "android": {"attestation_chain": [b64encode(c) for c in fixture.chain(ch.nonce)]},
+    }, account)
+
+
+@pytest.mark.parametrize("backend", ["memory", "sqlite"])
+def test_enrollment_never_replaces_existing_records(backend, tmp_path, android):
+    db = str(tmp_path / "registry.sqlite")
+    reg = InMemoryKeyRegistry() if backend == "memory" else SqliteKeyRegistry(db)
+    try:
+        enr = Enroller(EnrollmentPolicy(android=android_policy(android)), reg)
+        first = _register_android(enr, android, "policy-A")
+        original = first.to_dict()
+        for account in ("policy-A", "policy-B"):
+            with pytest.raises(EnrollmentError) as exc:
+                _register_android(enr, android, account)
+            assert exc.value.code == "key_already_enrolled"
+            assert reg.get(first.fingerprint).to_dict() == original
+
+        assert reg.revoke(first.fingerprint, "device retired")
+        revoked = reg.get(first.fingerprint).to_dict()
+        assert revoked["status"] == "revoked" and revoked["revoked_reason"] == "device retired"
+        with pytest.raises(EnrollmentError) as exc:
+            _register_android(enr, android, "policy-A")
+        assert exc.value.code == "key_already_enrolled"
+        assert reg.get(first.fingerprint).to_dict() == revoked
+        # A newly generated signing key can still be enrolled to that account.
+        android.signing_key = ec.generate_private_key(ec.SECP256R1())
+        replacement = _register_android(enr, android, "policy-A")
+        assert replacement.active and replacement.fingerprint != first.fingerprint
+        assert len(list(reg.list())) == 2
+        assert reg.get(first.fingerprint).to_dict() == revoked
+    finally:
+        if backend == "sqlite":
+            reg.close()
+    if backend == "sqlite":
+        reopened = SqliteKeyRegistry(db)
+        try:
+            assert reopened.get(first.fingerprint).to_dict() == revoked
+        finally:
+            reopened.close()
+
+
+@pytest.mark.parametrize("backend", ["memory", "sqlite"])
+def test_concurrent_registration_has_one_winner(backend, tmp_path, android):
+    # Exercise independent SQL connections and the shared in-memory registry.
+    db = str(tmp_path / "registry.sqlite")
+    first = InMemoryKeyRegistry() if backend == "memory" else SqliteKeyRegistry(db)
+    second = first if backend == "memory" else SqliteKeyRegistry(db)
+    try:
+        pub = x963(android.signing_key.public_key())
+        gate = Barrier(2)
+
+        def insert(reg, account):
+            record = KeyRecord.manual(pub, account)
+            gate.wait(timeout=10)
+            return reg.insert_if_absent(record), record
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(insert, reg, account) for reg, account in
+                       ((first, "policy-A"), (second, "policy-B"))]
+            outcomes = [f.result() for f in futures]
+        assert sorted(ok for ok, _ in outcomes) == [False, True]
+        winner = next(record for ok, record in outcomes if ok)
+        assert second.get(winner.fingerprint).to_dict() == winner.to_dict()
+    finally:
+        if backend == "sqlite":
+            first.close()
+            second.close()
+
+
+def test_legacy_enrollment_store_requires_atomic_insert(android):
+    class LegacyStore:
+        def put(self, record):
+            pytest.fail("legacy upsert must never be used for enrollment")
+
+    enr = Enroller(EnrollmentPolicy(android=android_policy(android)), LegacyStore())
+    with pytest.raises(EnrollmentError) as exc:
+        _register_android(enr, android, "policy-A")
+    assert exc.value.code == "registry_unsupported"
+
+
+def test_manual_cli_cannot_replace_revoked_registration(tmp_path, android, capsys):
+    from verasnap_verify.cli import main
+    db = str(tmp_path / "keys.sqlite")
+    keys = ["keys", "--registry", db]
+    pub = b64encode(x963(android.signing_key.public_key()))
+    add = keys + ["add", "--public-key", pub, "--account", "policy-A"]
+    assert main(add) == 0
+    fp = capsys.readouterr().out.strip()
+    assert main(keys + ["revoke", fp, "--reason", "lost"]) == 0
+    assert main(keys + ["show", fp]) == 0
+    before = json.loads(capsys.readouterr().out)
+    assert main(add) == 3
+    assert "already has a registry record" in capsys.readouterr().err
+    assert main(keys + ["show", fp]) == 0
+    after = json.loads(capsys.readouterr().out)
+    assert before == after
+    assert after["status"] == "revoked" and after["revoked_reason"] == "lost"
 
 
 def test_enroller_ios_end_to_end(apple):

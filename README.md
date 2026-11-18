@@ -52,7 +52,7 @@ Command line:
 ```bash
 verasnap-verify verify proof.json --media photo.jpg --registry keys.sqlite
 verasnap-verify verify evidence_pack.zip --json
-verasnap-verify keys add --public-key <Base64> --account policy-123 --registry keys.sqlite
+verasnap-verify keys --registry keys.sqlite add --public-key <Base64> --account policy-123
 ```
 
 Exit codes: 0 green, 1 yellow, 2 red, 3 input error.

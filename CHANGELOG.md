@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Preserve existing signing-key records during device enrollment and manual registration. The built-in registries now reserve each fingerprint atomically. Custom enrollment stores require the same insert-if-absent operation.
+
 ## 0.1.0 — 2026-11-18
 
 First release (alpha).

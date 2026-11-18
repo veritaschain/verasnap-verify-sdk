@@ -74,10 +74,16 @@ class KeyRegistry(Protocol):
     def list(self) -> Iterable[KeyRecord]: ...
 
 
+class EnrollmentKeyRegistry(KeyRegistry, Protocol):
+    def insert_if_absent(self, record: KeyRecord) -> bool:
+        """Atomically insert a new fingerprint; return False without changing an existing record."""
+        ...
+
+
 class InMemoryKeyRegistry:
     def __init__(self, records: Iterable[KeyRecord] = ()):
         self._lock = threading.Lock()
-        self._records: dict[str, KeyRecord] = {r.fingerprint: r for r in records}
+        self._records: dict[str, KeyRecord] = {r.fingerprint.lower(): r for r in records}
 
     def get(self, fingerprint: str) -> KeyRecord | None:
         with self._lock:
@@ -86,6 +92,14 @@ class InMemoryKeyRegistry:
     def put(self, record: KeyRecord) -> None:
         with self._lock:
             self._records[record.fingerprint.lower()] = record
+
+    def insert_if_absent(self, record: KeyRecord) -> bool:
+        with self._lock:
+            fp = record.fingerprint.lower()
+            if fp in self._records:
+                return False
+            self._records[fp] = record
+            return True
 
     def revoke(self, fingerprint: str, reason: str = "") -> bool:
         with self._lock:
@@ -126,6 +140,15 @@ class SqliteKeyRegistry:
                 "INSERT OR REPLACE INTO signing_keys (fingerprint, record) VALUES (?, ?)",
                 (record.fingerprint.lower(), json.dumps(record.to_dict(), ensure_ascii=False)),
             )
+
+    def insert_if_absent(self, record: KeyRecord) -> bool:
+        with self._lock, self._conn:
+            cursor = self._conn.execute(
+                "INSERT INTO signing_keys (fingerprint, record) VALUES (?, ?) "
+                "ON CONFLICT(fingerprint) DO NOTHING",
+                (record.fingerprint.lower(), json.dumps(record.to_dict(), ensure_ascii=False)),
+            )
+            return cursor.rowcount == 1
 
     def revoke(self, fingerprint: str, reason: str = "") -> bool:
         rec = self.get(fingerprint)
