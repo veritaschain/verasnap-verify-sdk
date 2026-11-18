@@ -1,0 +1,105 @@
+{
+  "ProofVersion": "1.2",
+  "ProofType": "CPP_INGEST_PROOF",
+  "GeneratedAt": "2026-11-18T11:09:28.986Z",
+  "GeneratedBy": "VeraSnap/1.6.1",
+  "Event": {
+    "EventID": "34296a83-d4a8-442a-a7f8-c874e6b9197d",
+    "ChainID": "chain-main",
+    "PrevHash": "GENESIS",
+    "Timestamp": "2026-11-18T11:07:55.103Z",
+    "EventType": "INGEST",
+    "HashAlgo": "SHA256",
+    "SignAlgo": "ES256",
+    "Asset": {
+      "AssetID": "urn:cpp:asset:verasnap:c0a89b83-0ba3-410b-930e-888e57c723ac",
+      "AssetType": "IMAGE",
+      "AssetHash": "sha256:3615c12cca031394e470c4d6e78654f1962e624ac841ff8b848aeb253e9a36f6",
+      "AssetName": "IMG_0001.jpg",
+      "AssetSize": 4109,
+      "MimeType": "image/jpeg"
+    },
+    "CaptureContext": {
+      "DeviceID": "sha256:865159fe0b8c7484a34d9bf32360871bf0da5924a91bf87d81999fa4086ba118",
+      "DeviceModel": "iPhone 16 Pro",
+      "OSVersion": "iOS 26.1",
+      "AppVersion": "VeraSnap/1.6.1",
+      "KeyAttestation": {
+        "AttestationType": "APPLE_APP_ATTEST",
+        "AttestationData": "7BZJzVbpVLswmxUrMX4Oe/95f3q3J5/6Gl6NQoWfMpmtKJPRECCmYX7xS84RwMqS",
+        "KeyID": "sha256:993f53d4664e2e74fdfdeca85b294c0df6ba5c153e262ecf8bb692c3b5d02ead"
+      },
+      "HumanAttestation": {
+        "Verified": true,
+        "Method": "FaceID",
+        "VerifiedAt": "2026-11-18T11:07:54.253Z",
+        "CaptureOffsetMs": 850,
+        "SessionNonce": "50eb3506-619c-431d-b9a0-3de804a199eb"
+      },
+      "CaptureAssertion": {
+        "KeyID": "5J6HgyxsEdWMSX+N4s10Euh1PSvP83lADjTopKdd3bw=",
+        "Assertion": "NgUpxrCJs3KODL37SXaeF/I8LnHssZOdlUEnD7LLODP41Z5faKYXUVvKrVuCv97Ub85A90rcWhCKlznuHBkcLQ==",
+        "ClientDataHash": "5514c8b08547429c8fcc5b307d5ddfe06fb66a08dc766df1283af8089957377b",
+        "IsSimulator": false
+      }
+    },
+    "SensorData": {
+      "GPS": {
+        "LatitudeHash": "sha256:abababababababababababababababababababababababababababababababab",
+        "LongitudeHash": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "Altitude": 4.5,
+        "Accuracy": 1
+      },
+      "Accelerometer": [
+        0.012,
+        -0.981,
+        0.0,
+        1.0
+      ],
+      "Compass": 271.25,
+      "Barometer": {
+        "PressureHPa": 1013.2,
+        "RelativeAltitudeM": 0,
+        "Timestamp": "2026-11-18T11:07:55.103Z"
+      },
+      "TimeConsistency": {
+        "DeviceTimestamp": "2026-11-18T11:07:55.103Z",
+        "NTPTimestamp": "2026-11-18T11:07:55.115Z",
+        "OffsetMs": -12.5,
+        "IsConsistent": true,
+        "NTPServer": "time.apple.com",
+        "VerificationMethod": "NTP"
+      }
+    },
+    "CameraSettings": {
+      "FocalLength": 6.86,
+      "Aperture": 1.78,
+      "ISO": 64,
+      "ExposureTime": 0.008333333333333333,
+      "FlashMode": "off"
+    },
+    "EventHash": "sha256:0fb31ad563d79b81366477401c0bea307a6556cc6373161d5368287561364e8b",
+    "Signature": "es256:MEYCIQCHMrZS1SLVyGv6rj9v+k21GzH99EfD0EceS7IfXVev7AIhAJ8X+s8l1EhcksgA12mQQ3j8pxXWzKx5UmvpXDOlpYj2"
+  },
+  "Verification": {
+    "PublicKey": "BCxIMTt9iMNa+uq23Puz4uO+n8WPSsCIYcLe+ZkM0JtdUoqrGr5fbRmvstOq/CIIqtt3rvzGlYoJ/iNR82Tti04="
+  },
+  "Metadata": {
+    "OriginalFilename": "IMG_0001.jpg",
+    "OriginalSize": 4109
+  },
+  "Anchor": {
+    "AnchorID": "0030c46c-798c-409f-a3d3-f6b69dd3f917",
+    "AnchorType": "RFC3161",
+    "MerkleRoot": "sha256:ebd93efabe36734359a581e7366cc23b22643ce4f3d04e477cd0fd5c87cc3057",
+    "MerkleProof": [],
+    "MerkleIndex": 0,
+    "TreeSize": 1,
+    "AnchorDigest": "ebd93efabe36734359a581e7366cc23b22643ce4f3d04e477cd0fd5c87cc3057",
+    "AnchorDigestAlgorithm": "sha-256",
+    "LeafHashMethod": "SHA256(EventHash)",
+    "TSAMessageImprint": "ebd93efabe36734359a581e7366cc23b22643ce4f3d04e477cd0fd5c87cc3057",
+    "TSATimestamp": "2026-11-18T11:09:25.000Z",
+    "TSAService": "https://rfc3161.ai.moda"
+  }
+}

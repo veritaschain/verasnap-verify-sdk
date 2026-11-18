@@ -1,0 +1,459 @@
+{
+  "generated_at": "2026-11-18T11:09:25.103Z",
+  "generator": "tools/make_fixtures.py",
+  "keys": {
+    "device_enrolled": "BCxIMTt9iMNa+uq23Puz4uO+n8WPSsCIYcLe+ZkM0JtdUoqrGr5fbRmvstOq/CIIqtt3rvzGlYoJ/iNR82Tti04=",
+    "device_revoked": "BP5uFxDAGG31KyFh3atpx9zYYO5h78TI0ElPCIlPRSYEj9KpE1WJUqixlm01qsxOtP6xx+HAPPAsgmFjthZd+6M=",
+    "attacker": "BCDIvmjrGCHqQGaLYCOCVZ92nKL1ow4q7fvkf/hqg04SN9/rc5YTw69GvRb3sP3oU7mAIpavOkzCbgjLt/PIBy8="
+  },
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "Genuine capture, enrolled key, photo supplied",
+      "proof": "S01/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED"
+      }
+    },
+    {
+      "id": "S02",
+      "title": "Genuine capture, key not enrolled",
+      "proof": "S02/proof.json",
+      "media": "photo.jpg",
+      "registry": "empty",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "signer_key"
+        ]
+      }
+    },
+    {
+      "id": "S03",
+      "title": "Photo edited after capture (one bit)",
+      "proof": "S03/proof.json",
+      "media": "photo_edited.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "HASH_MISMATCH",
+        "failed": [
+          "media_hash"
+        ]
+      }
+    },
+    {
+      "id": "S04",
+      "title": "Photo re-compressed",
+      "proof": "S04/proof.json",
+      "media": "photo_recompressed.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "HASH_MISMATCH",
+        "failed": [
+          "media_hash"
+        ]
+      }
+    },
+    {
+      "id": "S05",
+      "title": "Photo swapped for another real photo",
+      "proof": "S05/proof.json",
+      "media": "photo_other.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "HASH_MISMATCH",
+        "failed": [
+          "media_hash"
+        ]
+      }
+    },
+    {
+      "id": "S06",
+      "title": "Forged proof: AI image, attacker's own key, real TSA token",
+      "proof": "S06/proof.json",
+      "media": "photo_ai_generated.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "signer_key"
+        ]
+      }
+    },
+    {
+      "id": "S07",
+      "title": "Public key replaced with the attacker's",
+      "proof": "S07/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "SIGNATURE_INVALID",
+        "failed": [
+          "signature"
+        ]
+      }
+    },
+    {
+      "id": "S08",
+      "title": "Event section edited to point at another photo",
+      "proof": "S08/proof.json",
+      "media": "photo_ai_generated.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "HASH_MISMATCH",
+        "failed": [
+          "event_hash"
+        ],
+        "warning": [
+          "media_hash"
+        ],
+        "codes": {
+          "event_hash": "raw_event_inconsistent",
+          "media_hash": "not_bound"
+        }
+      }
+    },
+    {
+      "id": "S09",
+      "title": "raw_event removed",
+      "proof": "S09/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "event_hash",
+          "media_hash"
+        ]
+      }
+    },
+    {
+      "id": "S10",
+      "title": "raw_event edited to match an AI image",
+      "proof": "S10/proof.json",
+      "media": "photo_ai_generated.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "SIGNATURE_INVALID",
+        "failed": [
+          "event_hash",
+          "signature",
+          "media_hash",
+          "merkle_inclusion"
+        ]
+      }
+    },
+    {
+      "id": "S11",
+      "title": "Backdated: capture time 30 days before the timestamp",
+      "proof": "S11/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "capture_time"
+        ],
+        "codes": {
+          "capture_time": "anchor_delayed"
+        }
+      }
+    },
+    {
+      "id": "S12",
+      "title": "Device clock ahead of the timestamp by 20 minutes",
+      "proof": "S12/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "capture_time"
+        ],
+        "codes": {
+          "capture_time": "capture_after_timestamp"
+        }
+      }
+    },
+    {
+      "id": "S13",
+      "title": "Timestamp stripped",
+      "proof": "S13/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ERROR",
+        "failed": [
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S14",
+      "title": "Timestamp token swapped from another proof",
+      "proof": "S14/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ERROR",
+        "failed": [
+          "message_imprint",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S15",
+      "title": "anchor_digest edited",
+      "proof": "S15/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ERROR",
+        "failed": [
+          "timestamp",
+          "message_imprint"
+        ],
+        "codes": {
+          "timestamp": "anchor_digest_mismatch"
+        }
+      }
+    },
+    {
+      "id": "S16",
+      "title": "Batch anchor (5 events), Merkle proof for event 3",
+      "proof": "S16/proof.json",
+      "media": "batch_3.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED"
+      }
+    },
+    {
+      "id": "S17",
+      "title": "Batch anchor with the Merkle proof omitted",
+      "proof": "S17/proof.json",
+      "media": "batch_3.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "merkle_inclusion"
+        ]
+      }
+    },
+    {
+      "id": "S18",
+      "title": "TSA root not trusted by the verifier",
+      "proof": "S18/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "sectigo_only",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "tsa_signature",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S19",
+      "title": "Sectigo timestamp",
+      "proof": "S19/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED"
+      }
+    },
+    {
+      "id": "S20",
+      "title": "Photo not supplied",
+      "proof": "S20/proof.json",
+      "media": null,
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED",
+        "skipped": [
+          "media_hash"
+        ],
+        "media_verified": false
+      }
+    },
+    {
+      "id": "S21",
+      "title": "Chain context records deletions (unsigned, informational)",
+      "proof": "S21/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED",
+        "codes": {
+          "chain_context": "deletions_recorded"
+        }
+      }
+    },
+    {
+      "id": "S22",
+      "title": "Timestamp token corrupted",
+      "proof": "S22/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ERROR",
+        "failed": [
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S23",
+      "title": "Internal proof.json (iOS event with fields outside the iOS 1.6 verify model)",
+      "proof": "S23/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED",
+        "codes": {
+          "event_hash": "match"
+        }
+      }
+    },
+    {
+      "id": "S24",
+      "title": "Internal proof.json with a field added after signing",
+      "proof": "S24/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "event_hash"
+        ],
+        "codes": {
+          "event_hash": "unsigned_fields"
+        }
+      }
+    },
+    {
+      "id": "S25",
+      "title": "Internal proof.json with an event field edited",
+      "proof": "S25/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "SIGNATURE_INVALID",
+        "failed": [
+          "event_hash",
+          "signature"
+        ]
+      }
+    },
+    {
+      "id": "S26",
+      "title": "Internal proof.json with the anchor stripped",
+      "proof": "S26/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ERROR",
+        "failed": [
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S27",
+      "title": "Internal proof.json without the TSA token",
+      "proof": "S27/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "S28",
+      "title": "Evidence Pack ZIP (media.jpg + proof.json)",
+      "proof": "S28/proof.zip",
+      "media": null,
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED",
+        "media_verified": true
+      }
+    },
+    {
+      "id": "S29",
+      "title": "Video capture",
+      "proof": "S29/proof.json",
+      "media": "video.mov",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED"
+      }
+    },
+    {
+      "id": "S30",
+      "title": "Key revoked by the insurer",
+      "proof": "S30/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "PARTIALLY_VERIFIED",
+        "warning": [
+          "signer_key"
+        ],
+        "codes": {
+          "signer_key": "revoked"
+        }
+      }
+    },
+    {
+      "id": "S31",
+      "title": "Android-style internal proof.json",
+      "proof": "S31/proof.json",
+      "media": "photo.jpg",
+      "registry": "default",
+      "trust": "default",
+      "expect": {
+        "status": "ANCHOR_VERIFIED"
+      }
+    }
+  ]
+}

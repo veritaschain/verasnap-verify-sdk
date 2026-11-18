@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verasnap-verify"
+version = "0.1.0"
+description = "Server-side verification of VeraSnap / CPP capture proofs and device-key enrollment for insurers"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "VeritasChain Co., Ltd.", email = "developers@veritaschain.org" }]
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=42",
+    "asn1crypto>=1.5",
+    "cbor2>=5.4",
+]
+keywords = ["provenance", "rfc3161", "key-attestation", "app-attest", "insurance", "claims", "c2pa", "cpp"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security :: Cryptography",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://lp.verasnap.net/insurance/"
+Source = "https://github.com/veritaschain/verasnap-verify-sdk"
+Specification = "https://github.com/veritaschain/cpp-spec"
+
+[project.scripts]
+verasnap-verify = "verasnap_verify.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"verasnap_verify.data" = ["*.pem", "*.json", "*.md"]

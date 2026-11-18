@@ -1,0 +1,832 @@
+{
+ "description": "Field tree of VeraSnap iOS CPPEventJSON (legacy EventHash fallback). Generated; do not edit.",
+ "model": {
+  "fields": {
+   "Asset": {
+    "optional": false,
+    "schema": {
+     "fields": {
+      "AssetHash": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "AssetID": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "AssetName": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "AssetSize": {
+       "optional": false,
+       "schema": {
+        "type": "int"
+       }
+      },
+      "AssetType": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "MimeType": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "VideoMetadata": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "Codec": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "Duration": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "FrameRate": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "HasAudio": {
+          "optional": false,
+          "schema": {
+           "type": "bool"
+          }
+         },
+         "Resolution": {
+          "optional": false,
+          "schema": {
+           "fields": {
+            "Height": {
+             "optional": false,
+             "schema": {
+              "type": "int"
+             }
+            },
+            "Width": {
+             "optional": false,
+             "schema": {
+              "type": "int"
+             }
+            }
+           },
+           "swift": "VideoResolutionJSON",
+           "type": "object"
+          }
+         }
+        },
+        "swift": "VideoMetadataJSON",
+        "type": "object"
+       }
+      }
+     },
+     "swift": "AssetInfoJSON",
+     "type": "object"
+    }
+   },
+   "CameraSettings": {
+    "optional": true,
+    "schema": {
+     "fields": {
+      "Aperture": {
+       "optional": true,
+       "schema": {
+        "type": "double"
+       }
+      },
+      "ExposureTime": {
+       "optional": true,
+       "schema": {
+        "type": "double"
+       }
+      },
+      "FlashMode": {
+       "optional": true,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "FocalLength": {
+       "optional": true,
+       "schema": {
+        "type": "double"
+       }
+      },
+      "ISO": {
+       "optional": true,
+       "schema": {
+        "type": "int"
+       }
+      }
+     },
+     "swift": "CameraSettingsJSON",
+     "type": "object"
+    }
+   },
+   "CaptureContext": {
+    "optional": false,
+    "schema": {
+     "fields": {
+      "AppVersion": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "DeviceID": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "DeviceModel": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "HumanAttestation": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "CaptureOffsetMs": {
+          "optional": false,
+          "schema": {
+           "type": "int"
+          }
+         },
+         "Method": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "SessionNonce": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "Verified": {
+          "optional": false,
+          "schema": {
+           "type": "bool"
+          }
+         },
+         "VerifiedAt": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "HumanAttestationJSON",
+        "type": "object"
+       }
+      },
+      "KeyAttestation": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "AttestationData": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "AttestationType": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "KeyID": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "KeyAttestationJSON",
+        "type": "object"
+       }
+      },
+      "OSVersion": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      }
+     },
+     "swift": "CaptureContextJSON",
+     "type": "object"
+    }
+   },
+   "ChainID": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "EventHash": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "EventID": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "EventType": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "HashAlgo": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "PrevHash": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "SensorData": {
+    "optional": true,
+    "schema": {
+     "fields": {
+      "Accelerometer": {
+       "optional": true,
+       "schema": {
+        "items": {
+         "type": "double"
+        },
+        "type": "array"
+       }
+      },
+      "AmbientLight": {
+       "optional": true,
+       "schema": {
+        "type": "double"
+       }
+      },
+      "Barometer": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "PressureHPa": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "RelativeAltitudeM": {
+          "optional": true,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "Timestamp": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "BarometerData",
+        "type": "object"
+       }
+      },
+      "Compass": {
+       "optional": true,
+       "schema": {
+        "type": "double"
+       }
+      },
+      "DepthAnalysis": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "AnalysisHash": {
+          "optional": true,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "Available": {
+          "optional": false,
+          "schema": {
+           "type": "bool"
+          }
+         },
+         "FrameTimestamp": {
+          "optional": true,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "PlaneAnalysis": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "DominantPlaneDistance": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "DominantPlaneRatio": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "PlaneCount": {
+             "optional": false,
+             "schema": {
+              "type": "int"
+             }
+            }
+           },
+           "swift": "PlaneAnalysis",
+           "type": "object"
+          }
+         },
+         "Resolution": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "Height": {
+             "optional": false,
+             "schema": {
+              "type": "int"
+             }
+            },
+            "Width": {
+             "optional": false,
+             "schema": {
+              "type": "int"
+             }
+            }
+           },
+           "swift": "DepthResolution",
+           "type": "object"
+          }
+         },
+         "ScreenDetection": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "Confidence": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "Indicators": {
+             "optional": false,
+             "schema": {
+              "fields": {
+               "DepthUniformity": {
+                "optional": false,
+                "schema": {
+                 "type": "double"
+                }
+               },
+               "EdgeSharpness": {
+                "optional": false,
+                "schema": {
+                 "type": "double"
+                }
+               },
+               "FlatnessScore": {
+                "optional": false,
+                "schema": {
+                 "type": "double"
+                }
+               }
+              },
+              "swift": "ScreenIndicators",
+              "type": "object"
+             }
+            },
+            "IsLikelyScreen": {
+             "optional": false,
+             "schema": {
+              "type": "bool"
+             }
+            }
+           },
+           "swift": "ScreenDetection",
+           "type": "object"
+          }
+         },
+         "SensorType": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "Statistics": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "DepthRange": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "MaxDepth": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "MeanDepth": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "MinDepth": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "StdDeviation": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "ValidPixelRatio": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            }
+           },
+           "swift": "DepthStatistics",
+           "type": "object"
+          }
+         },
+         "UnavailableReason": {
+          "optional": true,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "DepthAnalysis",
+        "type": "object"
+       }
+      },
+      "GPS": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "Accuracy": {
+          "optional": true,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "Altitude": {
+          "optional": true,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "LatitudeHash": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "LongitudeHash": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "GPSDataJSON",
+        "type": "object"
+       }
+      },
+      "SoftwareScreenAnalysis": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "AnalysisMethod": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "CombinedScore": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "Confidence": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "FlickerAnalysis": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "Detected": {
+             "optional": false,
+             "schema": {
+              "type": "bool"
+             }
+            },
+            "DominantFrequencyHz": {
+             "optional": true,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "PeakSNR": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "Score": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            }
+           },
+           "swift": "FlickerResult",
+           "type": "object"
+          }
+         },
+         "IsLikelyScreen": {
+          "optional": false,
+          "schema": {
+           "type": "bool"
+          }
+         },
+         "LuminanceAnalysis": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "ContrastUniformity": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "EdgeSharpnessScore": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "HistogramEntropy": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "Score": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            }
+           },
+           "swift": "LuminanceResult",
+           "type": "object"
+          }
+         },
+         "MoireAnalysis": {
+          "optional": true,
+          "schema": {
+           "fields": {
+            "PeakFrequency": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "PeakMagnitude": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "Score": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            },
+            "SpectralEntropy": {
+             "optional": false,
+             "schema": {
+              "type": "double"
+             }
+            }
+           },
+           "swift": "MoireResult",
+           "type": "object"
+          }
+         },
+         "ProcessingTimeMs": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         }
+        },
+        "swift": "SoftwareScreenAnalysis",
+        "type": "object"
+       }
+      },
+      "TimeConsistency": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "DeviceTimestamp": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "IsConsistent": {
+          "optional": false,
+          "schema": {
+           "type": "bool"
+          }
+         },
+         "NTPServer": {
+          "optional": true,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "NTPTimestamp": {
+          "optional": true,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "OffsetMs": {
+          "optional": true,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "VerificationMethod": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         }
+        },
+        "swift": "TimeConsistency",
+        "type": "object"
+       }
+      },
+      "TremorAnalysis": {
+       "optional": true,
+       "schema": {
+        "fields": {
+         "AnalysisDurationMs": {
+          "optional": false,
+          "schema": {
+           "type": "int"
+          }
+         },
+         "CaptureMethod": {
+          "optional": false,
+          "schema": {
+           "type": "string"
+          }
+         },
+         "Confidence": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "DominantFrequencyHz": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         },
+         "SampleRateHz": {
+          "optional": false,
+          "schema": {
+           "type": "int"
+          }
+         },
+         "SensorAxes": {
+          "optional": false,
+          "schema": {
+           "type": "int"
+          }
+         },
+         "TremorBandPowerRatio": {
+          "optional": false,
+          "schema": {
+           "type": "double"
+          }
+         }
+        },
+        "swift": "TremorAnalysis",
+        "type": "object"
+       }
+      }
+     },
+     "swift": "SensorDataJSON",
+     "type": "object"
+    }
+   },
+   "SignAlgo": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "Signature": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   },
+   "SignerInfo": {
+    "optional": true,
+    "schema": {
+     "fields": {
+      "AttestedAt": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "Identifier": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      },
+      "Name": {
+       "optional": false,
+       "schema": {
+        "type": "string"
+       }
+      }
+     },
+     "swift": "SignerInfoEventJSON",
+     "type": "object"
+    }
+   },
+   "Timestamp": {
+    "optional": false,
+    "schema": {
+     "type": "string"
+    }
+   }
+  },
+  "swift": "CPPEventJSON",
+  "type": "object"
+ },
+ "source": "veritaschain/verasnap-ios, Sources 2/Verification/ProofModels.swift and referenced types"
+}

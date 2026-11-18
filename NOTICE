@@ -1,0 +1,9 @@
+VeraSnap Verify SDK
+Copyright 2026 VeritasChain Co., Ltd.
+
+This product includes test fixtures copied from google/android-key-attestation
+(https://github.com/google/android-key-attestation), Copyright Google LLC,
+licensed under the Apache License, Version 2.0.
+
+Bundled trust anchors (src/verasnap_verify/data) are public root certificates
+published by Google, Apple, DigiCert, Sectigo/USERTrust and GlobalSign.
