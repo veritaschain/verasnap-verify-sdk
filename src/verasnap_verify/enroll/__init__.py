@@ -32,7 +32,7 @@ from .._crypto import (
     verify_es256,
     x963,
 )
-from ..registry import KeyRecord, KeyRegistry
+from ..registry import EnrollmentKeyRegistry, KeyRecord
 from .android import AndroidPolicy, RevocationList, SecurityLevel, verify_android_attestation
 from .apple import ApplePolicy, enrollment_client_data, verify_app_attest
 from .errors import EnrollmentError
@@ -114,7 +114,7 @@ class EnrollmentPolicy:
 @dataclass
 class Enroller:
     policy: EnrollmentPolicy
-    registry: KeyRegistry
+    registry: EnrollmentKeyRegistry
     challenges: ChallengeStore = field(default_factory=InMemoryChallengeStore)
 
     def issue_challenge(self, account_ref: str) -> Challenge:
@@ -198,10 +198,6 @@ class Enroller:
             raise EnrollmentError("request_malformed", "platform must be 'android' or 'ios'")
 
         fingerprint = key_fingerprint(key)
-        existing = self.registry.get(fingerprint)
-        if existing is not None and existing.account_ref != account_ref:
-            raise EnrollmentError("key_already_enrolled", "this key is already enrolled to another account")
-
         record = KeyRecord(
             fingerprint=fingerprint,
             public_key_x963=b64encode(key_x963),
@@ -212,5 +208,9 @@ class Enroller:
             attestation=attestation,
             **record_extra,
         )
-        self.registry.put(record)
+        insert = getattr(self.registry, "insert_if_absent", None)
+        if not callable(insert):
+            raise EnrollmentError("registry_unsupported", "enrollment requires atomic insert_if_absent")
+        if not insert(record):
+            raise EnrollmentError("key_already_enrolled", "this signing key already has a registry record")
         return record

@@ -2,9 +2,9 @@
 
     verasnap-verify verify proof.json --media photo.jpg [--registry keys.sqlite] [--json]
     verasnap-verify verify evidence_pack.zip
-    verasnap-verify keys add --public-key <Base64 X9.63> --account policy-123 --registry keys.sqlite
-    verasnap-verify keys list --registry keys.sqlite
-    verasnap-verify keys revoke <fingerprint> --reason "device lost" --registry keys.sqlite
+    verasnap-verify keys --registry keys.sqlite add --public-key <Base64 X9.63> --account policy-123
+    verasnap-verify keys --registry keys.sqlite list
+    verasnap-verify keys --registry keys.sqlite revoke <fingerprint> --reason "device lost"
 
 Exit codes for `verify`: 0 green, 1 yellow, 2 red, 3 usage or input error.
 """
@@ -67,7 +67,9 @@ def _cmd_keys(args) -> int:
     reg = SqliteKeyRegistry(args.registry)
     if args.keys_cmd == "add":
         record = KeyRecord.manual(base64.b64decode(args.public_key), args.account, note=args.note or "")
-        reg.put(record)
+        if not reg.insert_if_absent(record):
+            print("error: this signing key already has a registry record", file=sys.stderr)
+            return 3
         print(record.fingerprint)
     elif args.keys_cmd == "list":
         for r in reg.list():

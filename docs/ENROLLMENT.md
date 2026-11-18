@@ -41,6 +41,12 @@ enroller = Enroller(policy=policy, registry=SqliteKeyRegistry("keys.sqlite"))
 
 Refresh Google's revocation list daily and pass it in; the SDK does no network I/O. Errors raise `EnrollmentError` with a stable `code` (`challenge_unknown`, `challenge_expired`, `challenge_mismatch`, `attestation_untrusted_root`, `attestation_revoked`, `attestation_security_level`, `device_integrity`, `app_mismatch`, `attestation_key_mismatch`, `proof_of_possession_invalid`, …).
 
+### Existing signing keys
+
+Enrollment and the manual `keys add` command register **new** signing keys only. If the fingerprint already exists, enrollment returns `key_already_enrolled` without changing the record, even for the same authenticated account. Its original registration time, account, attestation, counters and any revocation time/reason remain intact. If a device needs a replacement after revocation, enroll a newly generated signing key.
+
+Custom enrollment stores must implement `insert_if_absent(record) -> bool`: atomically insert the complete record only when its fingerprint does not exist, returning `False` on conflict. Enforce uniqueness across all writers. Do not implement it as a separate read followed by an upsert. A store lacking this operation is rejected with `registry_unsupported`; existing verifier-only integrations are unaffected. The low-level `put` operation replaces records and is for trusted store maintenance, not registration.
+
 ## Request (JSON)
 
 ```json
