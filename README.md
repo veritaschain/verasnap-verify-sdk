@@ -4,7 +4,7 @@ Server-side verification of VeraSnap / CPP capture proofs, and enrollment of dev
 
 [日本語版 README](README.ja.md) · [Integration guide](docs/INTEGRATION.md) · [Enrollment](docs/ENROLLMENT.md) · [Result codes](docs/RESULTS.md) · [Limitations](docs/LIMITATIONS.md) · [Capture SDK (planned)](docs/CAPTURE_SDK.md)
 
-> **Status (alpha).** The [v0.1.0 release](https://github.com/veritaschain/verasnap-verify-sdk/releases/tag/v0.1.0) passed 125 tests. The revision pinned below [passed 131 tests](https://github.com/veritaschain/verasnap-verify-sdk/actions/runs/44302113905), including repeat-registration checks, 31 fraud scenarios with real RFC 3161 timestamps, and tests against real Android attestation chains. The capture SDK for insurers' own apps is in design. APIs may change before 1.0.
+> **Status (alpha).** The [v0.1.0 release](https://github.com/veritaschain/verasnap-verify-sdk/releases/tag/v0.1.0) passed 125 tests. The revision pinned below passed 186 tests in first-party CI ([20 November 2026 record](https://veritaschain.org/vso/announcements/2026-11-20-change-evidence-verifier-maintenance/)), including repeat-registration checks, Android attestation issuer and path-constraint checks, 31 fraud scenarios with real RFC 3161 timestamps, and tests against real Android attestation chains. These are first-party tests, not independent validation. The capture SDK for insurers' own apps is in design. APIs may change before 1.0.
 
 ## What it does
 
@@ -20,16 +20,16 @@ It does **not** judge what the picture shows. A real camera can photograph stage
 
 ## Install
 
-Use Python 3.10 or later. For device-key enrollment, install the revision below. It includes [the fix for repeat registration](https://github.com/veritaschain/verasnap-verify-sdk/pull/1), which was merged after the v0.1.0 release. Enrollment and manual `keys add` now reject a known fingerprint and preserve its existing record, including any revocation.
+Use Python 3.10 or later. For device-key enrollment, install the revision below. It includes two fixes merged after the v0.1.0 release. [The fix for repeat registration](https://github.com/veritaschain/verasnap-verify-sdk/pull/1): enrollment and manual `keys add` now reject a known fingerprint and preserve its existing record, including any revocation. [The Android attestation path fix](https://github.com/veritaschain/verasnap-verify-sdk/pull/3): Android enrollment now checks each issuer's CA status, key usage and path length, and rejects malformed chains and constraints it does not support. The Apple and timestamp helpers are unchanged, and this is not a general PKIX validator.
 
 ```bash
-python -m pip install "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@5b19884061729c1aadbf3f22daab133c42082ede"
+python -m pip install "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@4eaa3b73e049bf14dbff0dcea30cf18c627ee617"
 ```
 
 If v0.1.0 and its dependencies are already installed, force the SDK reinstall because both revisions report version `0.1.0`.
 
 ```bash
-python -m pip install --force-reinstall --no-deps "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@5b19884061729c1aadbf3f22daab133c42082ede"
+python -m pip install --force-reinstall --no-deps "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@4eaa3b73e049bf14dbff0dcea30cf18c627ee617"
 ```
 
 Custom enrollment stores must now implement atomic insertion through [`insert_if_absent`](docs/ENROLLMENT.md). If a revocation record may already have been overwritten, reconcile the registry with independent audit records or a backup because upgrading cannot reconstruct that history.
