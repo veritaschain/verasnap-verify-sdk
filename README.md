@@ -107,7 +107,7 @@ pip install -e ".[test]" && pytest
 
 ## Disclosure
 
-This SDK is a first-party implementation by VeritasChain Co., Ltd., which shares a founder with the VeritasChain Standards Organization that publishes CPP. It has not been independently audited. It is not C2PA-certified. It does not determine whether a court, regulator or insurer will accept a proof.
+This SDK is a first-party implementation by VeritasChain Co., Ltd., which operates the VeritasChain Standards Organization (VSO), the specification initiative that publishes CPP. It has not been independently audited. It is not C2PA-certified. It does not determine whether a court, regulator or insurer will accept a proof.
 
 ## License
 
