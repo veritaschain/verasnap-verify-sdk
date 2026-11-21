@@ -90,7 +90,7 @@ verasnap-verify verify evidence_pack.zip --json
 
 ## 開示事項
 
-本SDKは VeritasChain株式会社による自社実装です。同社は CPP を公開する VeritasChain Standards Organization と創業者が同じです。第三者によるセキュリティ監査は受けていません。C2PA の認証も受けていません。証明が裁判所・規制当局・保険会社に採用されるかどうかを判断するものではありません。
+本SDKは VeritasChain株式会社による自社実装です。CPP を公開する VeritasChain Standards Organization（VSO）は、同社が運営する仕様開発の取り組みです。第三者によるセキュリティ監査は受けていません。C2PA の認証も受けていません。証明が裁判所・規制当局・保険会社に採用されるかどうかを判断するものではありません。
 
 ## ライセンス
 
