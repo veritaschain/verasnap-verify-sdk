@@ -19,7 +19,7 @@ Making stage 3 mandatory only where it matters keeps the customer journey unchan
 3. Store `result.to_dict()` with the claim. It records the checks, the verified timestamp, the signer key and the SDK version.
 4. For fast-track eligibility, require a green result, `result.media_verified`, a passed `signer_key` check with code `known`, and `result.signer.account_ref` equal to the expected account from your authenticated claim record. A manual registration reports `known_unattested`. If any condition is missing, use normal review or refer the claim. See the [routing example](../examples/verify_claim_photo.py).
 
-A green proof can have a skipped media check when the photo was omitted. The handler still assesses what the photo depicts and whether it supports the claim.
+A green proof can have a skipped media check when the photo was omitted. The handler still assesses what the photo depicts and whether it supports the claim. Merkle inclusion covers the selected event in the supplied batch. The capture history's deletion count is unsigned, so evaluating its completeness requires separate records.
 
 ## Suggested handling
 

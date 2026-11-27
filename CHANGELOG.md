@@ -4,7 +4,9 @@
 
 - Preserve existing signing-key records during device enrollment and manual registration. The built-in registries now reserve each fingerprint atomically. Custom enrollment stores require the same insert-if-absent operation.
 - Enforce issuer and path constraints in Android attestation enrollment: issuer CA status, key usage and path length are checked, input sizes are bounded, and malformed chains or unsupported constraints are rejected. The Apple and RFC 3161 helpers are unchanged.
-- README: pin the documented installation to a revision that includes both fixes.
+- The insurer example requires verified media, a hardware-attested signer and the expected claim account for fast-track eligibility. The guides explain proof-only results and the scope of Merkle inclusion.
+- `verasnap-verify verify` reports missing proof, media or trust files as input errors (exit 3).
+- The README installation commands pin the development revision containing these changes and both enrollment fixes.
 
 ## 0.1.0 — 2026-11-18
 
