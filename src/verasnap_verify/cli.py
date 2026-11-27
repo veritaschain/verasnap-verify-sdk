@@ -34,11 +34,11 @@ _MARK = {
 
 def _cmd_verify(args) -> int:
     registry = SqliteKeyRegistry(args.registry) if args.registry else None
-    trust = TrustStore.from_pem(Path(args.trust).read_bytes()) if args.trust else None
-    verifier = Verifier(registry=registry, trust=trust, require_known_signer=not args.allow_unknown_signer)
-    proof = Path(args.proof).read_bytes()
-    media = Path(args.media).read_bytes() if args.media else None
     try:
+        trust = TrustStore.from_pem(Path(args.trust).read_bytes()) if args.trust else None
+        verifier = Verifier(registry=registry, trust=trust, require_known_signer=not args.allow_unknown_signer)
+        proof = Path(args.proof).read_bytes()
+        media = Path(args.media).read_bytes() if args.media else None
         result = verifier.verify(proof, media)
     except (ProofFormatError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)

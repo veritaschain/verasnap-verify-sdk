@@ -13,7 +13,7 @@
 | No failure, no warning, timestamp fully verified | `ANCHOR_VERIFIED` | green |
 | No failure, no warning, no fully verified timestamp | `ANCHOR_PENDING` | yellow |
 
-`skipped` and `info` checks never change the status. These rules are those of the VeraSnap apps 1.6.1.
+`skipped` and `info` checks never change the status. These rules are those of the VeraSnap apps 1.6.1. A green proof may have `media_verified: false` or a manually registered key. For claim routing, check the [insurer integration conditions](INTEGRATION.md#minimal-integration).
 
 ## Fields
 

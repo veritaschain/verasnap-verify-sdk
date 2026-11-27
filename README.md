@@ -14,7 +14,7 @@ A claims system receives a photo and its VeraSnap proof. The SDK answers, with c
 - Was the proof timestamped by an independent authority, and when? (RFC 3161, full CMS and chain validation)
 - Was it signed by a device key that **you** enrolled, through hardware attestation? (Android Key Attestation, Apple App Attest)
 - Is the recorded capture time consistent with the timestamp? (the 60-minute rule of the VeraSnap apps)
-- Was anything removed from the capture history? (Merkle inclusion; chain context reported as a hint)
+- Does the event's Merkle inclusion proof match the supplied batch root? Capture-history deletion counts are unsigned hints. Checking inclusion of this event cannot establish that all expected captures are present.
 
 It does **not** judge what the picture shows. A real camera can photograph staged damage. *Provenance is not truth.*
 
@@ -69,7 +69,7 @@ Exit codes: 0 green, 1 yellow, 2 red, 3 input error.
 
 | Level | Status | Meaning |
 |---|---|---|
-| green | `ANCHOR_VERIFIED` | Every check passed: unchanged since signing, signed by an enrolled key, timestamp fully verified and obtained within 60 minutes of the recorded capture time. |
+| green | `ANCHOR_VERIFIED` | The timestamp was fully verified and no check failed or warned. An omitted photo leaves the media check skipped. A manually registered key can pass the signer check. |
 | yellow | `PARTIALLY_VERIFIED` | No check failed, but something could not be confirmed (unknown key, late timestamp, untrusted TSA, Merkle proof omitted, raw event missing…). |
 | yellow | `ANCHOR_PENDING` | Signature valid, but no fully verified timestamp. |
 | red | `SIGNATURE_INVALID` / `HASH_MISMATCH` / `ERROR` | The photo or proof does not match, or the proof was altered. |
@@ -80,14 +80,14 @@ Green means only that the proof meets VeraSnap's verification criteria. The capt
 
 Anyone can generate a P-256 key, sign an AI-edited image and buy a genuine RFC 3161 timestamp. That proof has a valid signature and a valid timestamp. What it cannot have is a key that was created inside a genuine device for your app and enrolled to a customer through hardware attestation. So:
 
-- proofs signed by enrolled keys can be **green**;
-- proofs signed by any other key — including keys of the free consumer app — are **yellow** at best.
+- active keys enrolled through hardware attestation pass with code `known`. An active manually registered key passes with `known_unattested` and can also produce **green**; check the code before relying on hardware origin;
+- unknown signing keys, including unregistered consumer-app keys, produce **yellow** at best under the default verification policy.
 
 The `verasnap_verify.enroll` module verifies Android Key Attestation chains (Google roots bundled, revocation list supported, verified boot and locked bootloader required by default) and Apple App Attest attestations (Apple root bundled) whose client data commits to the signing key. See [docs/ENROLLMENT.md](docs/ENROLLMENT.md).
 
 ## Recommended claims flow
 
-1. Photos with a proof from an enrolled key that verify green: fast track.
+1. Consider a photo for fast-track review when its proof is green, `media_verified` is true, the `signer_key` check passed with code `known` (hardware-attested enrollment), and `signer.account_ref` matches the expected account from the claim system. A green result alone goes through normal review.
 2. Photos without a proof: your existing post-hoc AI-image detection.
 3. Doubtful claims: ask for new photos taken with the capture SDK in your app.
 
