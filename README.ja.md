@@ -4,7 +4,7 @@ VeraSnap / CPP の撮影証明をサーバー側で検証し、端末の署名�
 
 [English README](README.md) · [導入ガイド](docs/ja/INTEGRATION.md) · [限界と未対応事項](docs/ja/LIMITATIONS.md) · [端末鍵の登録（英語）](docs/ENROLLMENT.md) · [結果コード（英語）](docs/RESULTS.md) · [撮影SDK（設計段階・英語）](docs/CAPTURE_SDK.md)
 
-> **アルファ版**　[v0.1.0 のリリース時](https://github.com/veritaschain/verasnap-verify-sdk/releases/tag/v0.1.0)には125件のテストが通りました。以下のコマンドで指定する版では、自社CIで186件が通っています（[2026年11月20日の記録](https://veritaschain.org/vso/announcements/2026-11-20-change-evidence-verifier-maintenance/ja/)）。鍵の再登録、Android 鍵証明の発行者と経路制約の検査、実際の RFC 3161 タイムスタンプを使った不正請求シナリオ31件、実機の Android 鍵証明チェーンを検証するテストを含みます。自社による試験であり、第三者による検証ではありません。保険会社のアプリに組み込む撮影SDKは設計段階です。1.0までにAPIが変わる可能性があります。
+> **アルファ版**　[v0.1.0 のリリース時](https://github.com/veritaschain/verasnap-verify-sdk/releases/tag/v0.1.0)には125件のテストが通りました。以下で指定する開発版では、[自社CI](https://github.com/veritaschain/verasnap-verify-sdk/actions/runs/46006502792)で196件のテストが通っています。鍵の再登録、Android 鍵証明の発行者と経路制約の検査、実際の RFC 3161 タイムスタンプを使った不正請求シナリオ31件、実機の Android 鍵証明チェーンを検証するテストを含みます。自社による試験であり、第三者による検証ではありません。保険会社のアプリに組み込む撮影SDKは設計段階です。1.0までにAPIが変わる可能性があります。
 
 ## できること
 
@@ -14,22 +14,22 @@ VeraSnap / CPP の撮影証明をサーバー側で検証し、端末の署名�
 - 独立した時刻認証局のタイムスタンプがあるか。それはいつか（RFC 3161。CMS署名と証明書チェーンまで検証）
 - **保険会社自身が**ハードウェア証明を通して登録した端末鍵で署名されているか（Android Key Attestation、Apple App Attest）
 - 記録された撮影時刻とタイムスタンプの時刻が整合しているか（アプリと同じ60分ルール）
-- 撮影履歴から写真が抜かれていないか（Merkle包含証明。チェーン情報は参考値として表示）
+- 提示されたイベントのMerkle包含証明が、そのバッチのルートと一致するか。撮影履歴の削除件数は署名されていない参考値です。履歴にすべての写真が揃っているかは、この包含証明からは判断できません。
 
 写真に写っている内容が本当かどうかは判定しません。本物のカメラで、作り込んだ損傷を撮ることはできます。**Provenance ≠ Truth（来歴は真実ではない）**。
 
 ## インストール
 
-Python 3.10以上を使用してください。端末鍵を登録する場合は、以下のコミットを指定してインストールしてください。この版には v0.1.0 のリリース後に入った修正が2件含まれています。[鍵の再登録に関する修正](https://github.com/veritaschain/verasnap-verify-sdk/pull/1)：登録処理と手動の `keys add` は、登録済みのフィンガープリントを拒否し、失効情報を含む既存の記録を保持します。[Android 鍵証明の経路に関する修正](https://github.com/veritaschain/verasnap-verify-sdk/pull/3)：Android の鍵登録で、発行者のCA権限、鍵用途、経路長を検査し、形式が不正なチェーンと未対応の制約を拒否します。Apple とタイムスタンプ用の処理は変わっていません。汎用のPKIX検証器になったわけではありません。
+Python 3.10以上を使用してください。このガイドのCLIと保険審査の実装例を使う場合は、以下の開発版コミットを指定してください。この版には v0.1.0 公開後の端末鍵登録の修正も含まれます。[鍵の再登録に関する修正](https://github.com/veritaschain/verasnap-verify-sdk/pull/1)：登録処理と手動の `keys add` は、登録済みのフィンガープリントを拒否し、失効情報を含む既存の記録を保持します。[Android 鍵証明の経路に関する修正](https://github.com/veritaschain/verasnap-verify-sdk/pull/3)：Android の鍵登録で、発行者のCA権限、鍵用途、経路長を検査し、形式が不正なチェーンと未対応の制約を拒否します。Apple とタイムスタンプ用の処理は変わっていません。汎用のPKIX検証器になったわけではありません。
 
 ```bash
-python -m pip install "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@4eaa3b73e049bf14dbff0dcea30cf18c627ee617"
+python -m pip install "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@1f1289ef21fea84393d42a36ee10152c25cae70e"
 ```
 
 v0.1.0 と依存ライブラリを導入済みの場合は、どちらの版もバージョン表示が `0.1.0` のため、次のコマンドでSDKを再インストールしてください。
 
 ```bash
-python -m pip install --force-reinstall --no-deps "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@4eaa3b73e049bf14dbff0dcea30cf18c627ee617"
+python -m pip install --force-reinstall --no-deps "verasnap-verify @ git+https://github.com/veritaschain/verasnap-verify-sdk.git@1f1289ef21fea84393d42a36ee10152c25cae70e"
 ```
 
 独自の鍵登録ストアを利用している場合は、[`insert_if_absent`](docs/ENROLLMENT.md) によるアトミックな挿入を実装してください。過去の失効記録が上書きされた可能性がある場合、更新だけでは履歴を復元できないため、鍵レジストリを独立した監査記録またはバックアップと照合してください。
@@ -66,7 +66,7 @@ verasnap-verify verify evidence_pack.zip --json
 
 | 色 | ステータス | 意味 |
 |---|---|---|
-| 緑 | `ANCHOR_VERIFIED` | すべてのチェックに合格。署名後に変わっておらず、登録済みの鍵で署名され、タイムスタンプを完全に検証でき、それが記録上の撮影時刻から60分以内に取得されている |
+| 緑 | `ANCHOR_VERIFIED` | タイムスタンプを完全に検証でき、不合格・警告のチェックがない。写真が未提出なら写真照合はスキップされ、手動登録鍵でも署名鍵のチェックは合格し得る |
 | 黄 | `PARTIALLY_VERIFIED` | 不合格はないが、確認できなかった点がある（未登録の鍵、タイムスタンプの遅れ、信頼できないTSA、Merkle証明の省略など） |
 | 黄 | `ANCHOR_PENDING` | 署名は有効だが、完全に検証できたタイムスタンプがない |
 | 赤 | `SIGNATURE_INVALID` / `HASH_MISMATCH` / `ERROR` | 写真と証明が一致しない、または証明が改変されている |
@@ -77,12 +77,12 @@ verasnap-verify verify evidence_pack.zip --json
 
 誰でもP-256の鍵を作り、AIで加工した画像に署名し、本物のRFC 3161タイムスタンプを取得できます。その証明は、署名もタイムスタンプも有効です。持てないのは、「本物の端末の中で、保険会社のアプリのために作られ、ハードウェア証明を通して契約者に登録された鍵」だけです。そのため、
 
-- 登録済みの鍵で署名された証明は**緑**になり得ます。
-- それ以外の鍵（無料の消費者向けアプリの鍵を含む）で署名された証明は、最高でも**黄**です。
+- 有効な鍵では、ハードウェア証明を経た登録は `known`、手動登録は `known_unattested` になります。どちらも**緑**になり得るので、端末由来であることを要件にするときはこのコードを確認します。
+- 既定の検証設定では、未登録の鍵（無料アプリの未登録鍵を含む）による証明は最高でも**黄**です。
 
 ## 推奨する運用
 
-1. 登録済みの鍵による証明付きで、緑の写真：ファストトラック
+1. ファストトラックの候補にするには、総合判定が緑で、`media_verified` が真、`signer_key` が `known` で合格し、`signer.account_ref` が請求システムで確認した対象契約者の参照IDと一致することを確認します。緑でも他の条件が揃わない案件は通常審査に回します。
 2. 証明のない写真（カメラロール、LINE、Webでの提出）：既存の事後検知AI
 3. 疑義のある請求・高額案件：保険会社アプリの撮影SDKで撮り直しを依頼
 

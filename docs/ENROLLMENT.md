@@ -1,6 +1,6 @@
 # Device key enrollment
 
-Enrollment binds a device signing key to one of your customers, after checking with Google or Apple hardware attestation that the key belongs to a genuine instance of **your** app on a genuine device. Proofs signed by enrolled keys can be green; all other proofs are yellow at best.
+Enrollment binds a device signing key to one of your customers, after checking with Google or Apple hardware attestation that the key belongs to a genuine instance of **your** app on a genuine device. For this enrollment route the signer check passes with code `known`. Manual registration can also yield a green proof, with code `known_unattested`. The [insurance routing example](../examples/verify_claim_photo.py) requires the hardware-attested code for fast-track eligibility.
 
 ## Flow
 

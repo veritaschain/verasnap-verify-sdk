@@ -6,7 +6,7 @@ Post-hoc detectors (AI-image classifiers, re-use matching) run on every photo, c
 
 | Stage | Photos | Check | Outcome |
 |---|---|---|---|
-| 1 | With a proof from an enrolled key | `Verifier.verify(proof, photo)` | green: fast track; yellow/red: stage 2 or 3 |
+| 1 | With a proof from an enrolled key | `Verifier.verify(proof, photo)` | Check the fast-track conditions below; otherwise use normal review or refer |
 | 2 | Without a proof (camera roll, LINE, web upload) | Your existing post-hoc detection | as today |
 | 3 | Doubtful claims, high amounts | Ask for new photos with the capture SDK in your app | verify as stage 1 |
 
@@ -17,15 +17,16 @@ Making stage 3 mandatory only where it matters keeps the customer journey unchan
 1. Receive the proof and the photo from your claims app or channel (shareable proof JSON, `proof.json`, or an Evidence Pack ZIP).
 2. `result = Verifier(registry=…).verify(proof, photo)`.
 3. Store `result.to_dict()` with the claim. It records the checks, the verified timestamp, the signer key and the SDK version.
-4. Route on `result.level` and, where you need detail, on `(check.id, check.code)`.
+4. For fast-track eligibility, require a green result, `result.media_verified`, a passed `signer_key` check with code `known`, and `result.signer.account_ref` equal to the expected account from your authenticated claim record. A manual registration reports `known_unattested`. If any condition is missing, use normal review or refer the claim. See the [routing example](../examples/verify_claim_photo.py).
 
-Treat the result as information for the claims handler, not as an automatic decision. A green result says the file is the one sealed at capture by an enrolled device; it does not say the damage is genuine.
+A green proof can have a skipped media check when the photo was omitted. The handler still assesses what the photo depicts and whether it supports the claim. Merkle inclusion covers the selected event in the supplied batch. The capture history's deletion count is unsigned, so evaluating its completeness requires separate records.
 
 ## Suggested handling
 
 | Result | Typical meaning | Suggested handling |
 |---|---|---|
-| green | Sealed at capture by an enrolled device, unchanged, timestamped within 60 minutes | Fast track; skip post-hoc AI detection for this photo |
+| green with all four conditions above | The supplied photo matches the signed digest and the attested key is registered to the expected account | Eligible for fast-track review under the insurer's policy |
+| green with missing media, manual key registration, or missing/mismatched account | A required photo or enrollment check is outstanding | Normal review |
 | yellow `signer_key/unknown` | Valid proof, but from a key you did not enroll (consumer app, or a forger's own key) | Treat as an unsealed photo (stage 2) |
 | yellow `capture_time/anchor_delayed` | Captured offline or backdated; existed no later than the timestamp | Compare the timestamp with the reported accident date |
 | yellow `timestamp/untrusted_chain` | TSA not in your trust store | Review your trust store; otherwise stage 2 |
